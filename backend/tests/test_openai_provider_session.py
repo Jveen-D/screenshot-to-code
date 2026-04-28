@@ -152,7 +152,7 @@ async def test_openai_provider_session_omits_prompt_cache_key_for_all_prompts() 
 
 
 @pytest.mark.asyncio
-async def test_openai_provider_session_uses_gpt_5_4_none_reasoning_effort() -> None:
+async def test_openai_provider_session_maps_gpt_5_4_none_to_gpt_5_5() -> None:
     client = _FakeOpenAIClient()
     session = OpenAIProviderSession(
         client=client,  # type: ignore[arg-type]
@@ -165,13 +165,13 @@ async def test_openai_provider_session_uses_gpt_5_4_none_reasoning_effort() -> N
 
     first_call = client.responses.calls[0]
 
-    assert first_call["model"] == "gpt-5.4-2026-03-05"
-    assert first_call["prompt_cache_retention"] == "24h"
+    assert first_call["model"] == "gpt-5.5"
+    assert "prompt_cache_retention" not in first_call
     assert first_call["reasoning"] == {"effort": "none", "summary": "auto"}
 
 
 @pytest.mark.asyncio
-async def test_openai_provider_session_uses_gpt_5_4_high_reasoning_effort() -> None:
+async def test_openai_provider_session_maps_gpt_5_4_high_to_gpt_5_5() -> None:
     client = _FakeOpenAIClient()
     session = OpenAIProviderSession(
         client=client,  # type: ignore[arg-type]
@@ -184,6 +184,42 @@ async def test_openai_provider_session_uses_gpt_5_4_high_reasoning_effort() -> N
 
     first_call = client.responses.calls[0]
 
-    assert first_call["model"] == "gpt-5.4-2026-03-05"
-    assert first_call["prompt_cache_retention"] == "24h"
+    assert first_call["model"] == "gpt-5.5"
+    assert "prompt_cache_retention" not in first_call
+    assert first_call["reasoning"] == {"effort": "high", "summary": "auto"}
+
+
+@pytest.mark.asyncio
+async def test_openai_provider_session_uses_gpt_5_5_high_reasoning_effort() -> None:
+    client = _FakeOpenAIClient()
+    session = OpenAIProviderSession(
+        client=client,  # type: ignore[arg-type]
+        model=Llm.GPT_5_5_HIGH,
+        prompt_messages=[{"role": "user", "content": "Build a dashboard."}],
+        tools=_test_tools(),
+    )
+
+    await session.stream_turn(_noop_event_sink)
+
+    first_call = client.responses.calls[0]
+
+    assert first_call["model"] == "gpt-5.5"
+    assert first_call["reasoning"] == {"effort": "high", "summary": "auto"}
+
+
+@pytest.mark.asyncio
+async def test_openai_provider_session_maps_gpt_5_2_codex_to_gpt_5_5() -> None:
+    client = _FakeOpenAIClient()
+    session = OpenAIProviderSession(
+        client=client,  # type: ignore[arg-type]
+        model=Llm.GPT_5_2_CODEX_HIGH,
+        prompt_messages=[{"role": "user", "content": "Build a dashboard."}],
+        tools=_test_tools(),
+    )
+
+    await session.stream_turn(_noop_event_sink)
+
+    first_call = client.responses.calls[0]
+
+    assert first_call["model"] == "gpt-5.5"
     assert first_call["reasoning"] == {"effort": "high", "summary": "auto"}

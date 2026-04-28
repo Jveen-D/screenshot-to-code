@@ -262,7 +262,7 @@ async def run_evals(request: RunEvalsRequest) -> List[str]:
     """Run evaluations on selected images in the inputs directory for multiple models"""
     all_output_files: List[str] = []
 
-    for model in request.models:
+    for model in [Llm.GPT_5_5_HIGH.value]:
         output_files = await run_image_evals(
             model=model,
             stack=request.stack,
@@ -288,10 +288,11 @@ async def run_evals_stream(request: RunEvalsRequest):
     if not request.models:
         raise HTTPException(status_code=400, detail="At least one model is required")
 
+    models = [Llm.GPT_5_5_HIGH.value]
     per_model_task_counts: Dict[str, int] = {}
     per_model_skipped_existing: Dict[str, int] = {}
     if request.diff_mode:
-        for model in request.models:
+        for model in models:
             pending_tasks, skipped_tasks = count_pending_eval_tasks(
                 stack=request.stack,
                 model=model,
@@ -303,7 +304,7 @@ async def run_evals_stream(request: RunEvalsRequest):
             per_model_skipped_existing[model] = skipped_tasks
     else:
         per_model_task_count = _count_eval_files(request.files)
-        for model in request.models:
+        for model in models:
             per_model_task_counts[model] = per_model_task_count
             per_model_skipped_existing[model] = 0
 
@@ -324,7 +325,7 @@ async def run_evals_stream(request: RunEvalsRequest):
                 await emit(
                     {
                         "type": "start",
-                        "total_models": len(request.models),
+                        "total_models": len(models),
                         "tasks_per_model": per_model_task_counts,
                         "total_tasks": total_tasks,
                         "completed_tasks": 0,
@@ -333,7 +334,7 @@ async def run_evals_stream(request: RunEvalsRequest):
                     }
                 )
 
-                for model_index, model in enumerate(request.models, start=1):
+                for model_index, model in enumerate(models, start=1):
                     model_task_count = per_model_task_counts.get(model, 0)
                     model_skipped_existing = per_model_skipped_existing.get(model, 0)
                     await emit(
@@ -341,7 +342,7 @@ async def run_evals_stream(request: RunEvalsRequest):
                             "type": "model_start",
                             "model": model,
                             "model_index": model_index,
-                            "total_models": len(request.models),
+                            "total_models": len(models),
                             "model_tasks": model_task_count,
                             "model_skipped_existing": model_skipped_existing,
                         }
@@ -353,7 +354,7 @@ async def run_evals_stream(request: RunEvalsRequest):
                                 **event,
                                 "model": model,
                                 "model_index": model_index,
-                                "total_models": len(request.models),
+                                "total_models": len(models),
                                 "global_completed_tasks": completed_offset
                                 + event.get("completed_tasks", 0),
                                 "global_total_tasks": total_tasks,
@@ -396,7 +397,7 @@ async def run_evals_stream(request: RunEvalsRequest):
 
 @router.get("/models", response_model=Dict[str, List[str]])
 async def get_models():
-    current_models = [model.value for model in Llm]
+    current_models = [Llm.GPT_5_5_HIGH.value]
 
     # Import Stack type from prompts.prompt_types and get all literal values
     available_stacks = list(Stack.__args__)

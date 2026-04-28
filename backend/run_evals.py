@@ -29,11 +29,11 @@ async def main():
 #                 task = generate_code_for_text(
 #                     text=prompt,
 #                     stack=STACK,
-#                     model=Llm.CLAUDE_4_5_SONNET_2025_09_29,
+#                     model=Llm.GPT_5_5_HIGH,
 #                 )
 #             else:
 #                 task = generate_code_for_text(
-#                     text=prompt, stack=STACK, model=Llm.GPT_4_1_2025_04_14
+#                     text=prompt, stack=STACK, model=Llm.GPT_5_5_HIGH
 #                 )
 #             tasks.append(task)
 

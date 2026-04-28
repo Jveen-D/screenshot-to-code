@@ -90,7 +90,7 @@ function App() {
       isImageGenerationEnabled: true,
       editorTheme: EditorTheme.COBALT,
       generatedCodeConfig: Stack.HTML_TAILWIND,
-      codeGenerationModel: CodeGenerationModel.CLAUDE_4_5_OPUS_2025_11_01,
+      codeGenerationModel: CodeGenerationModel.GPT_5_5_HIGH,
       // Only relevant for hosted version
       isTermOfServiceAccepted: false,
     },
@@ -233,10 +233,8 @@ function App() {
     // Merge settings with params
     const updatedParams = { ...requestParams, ...settings };
 
-    // Use 4 variants for create, 2 for edits to match backend counts
-    // and avoid a flash when the backend sends the actual variant count
-    const initialVariantCount =
-      requestParams.generationType === "create" ? 4 : 2;
+    // Match the backend count to avoid a flash when variantCount arrives.
+    const initialVariantCount = 1;
     const baseCommitObject = {
       variants: Array(initialVariantCount)
         .fill(null)

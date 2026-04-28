@@ -35,7 +35,7 @@ const stacks = process.env.QA_STACKS
   ? process.env.QA_STACKS.split(",").map((stack) => stack.trim() as Stack)
   : defaultStacks;
 
-const defaultModels = [CodeGenerationModel.CLAUDE_4_5_OPUS_2025_11_01];
+const defaultModels = [CodeGenerationModel.GPT_5_5_HIGH];
 const models = process.env.QA_MODELS
   ? process.env.QA_MODELS.split(",").map((model) => model.trim())
   : defaultModels;
@@ -422,6 +422,10 @@ async function installDomTestHooks(page: Page) {
 
 async function installMockWebSocket(page: Page) {
   await page.evaluateOnNewDocument(() => {
+    type GenerationPayload = {
+      generationType?: string;
+    };
+
     class MockWebSocket {
       static CONNECTING = 0;
       static OPEN = 1;
@@ -430,7 +434,7 @@ async function installMockWebSocket(page: Page) {
 
       readyState = MockWebSocket.CONNECTING;
       url: string;
-      listeners: Record<string, Array<(event: any) => void>> = {};
+      listeners: Record<string, Array<(event: unknown) => void>> = {};
 
       constructor(url: string) {
         this.url = url;
@@ -440,14 +444,14 @@ async function installMockWebSocket(page: Page) {
         }, 10);
       }
 
-      addEventListener(type: string, listener: (event: any) => void) {
+      addEventListener(type: string, listener: (event: unknown) => void) {
         if (!this.listeners[type]) {
           this.listeners[type] = [];
         }
         this.listeners[type].push(listener);
       }
 
-      removeEventListener(type: string, listener: (event: any) => void) {
+      removeEventListener(type: string, listener: (event: unknown) => void) {
         if (!this.listeners[type]) return;
         this.listeners[type] = this.listeners[type].filter(
           (existing) => existing !== listener
@@ -455,7 +459,7 @@ async function installMockWebSocket(page: Page) {
       }
 
       send(data: string) {
-        const params = JSON.parse(data);
+        const params = JSON.parse(data) as GenerationPayload;
         const code = [
           "<!doctype html>",
           "<html>",
@@ -489,7 +493,7 @@ async function installMockWebSocket(page: Page) {
         this.emit("close", { code, reason });
       }
 
-      emit(type: string, event: any) {
+      emit(type: string, event: unknown) {
         (this.listeners[type] || []).forEach((listener) => {
           listener(event);
         });

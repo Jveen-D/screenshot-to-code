@@ -54,19 +54,6 @@ from prompts.pipeline import build_prompt_messages
 from prompts.request_parsing import parse_prompt_content, parse_prompt_history
 from prompts.prompt_types import PromptHistoryMessage, Stack, UserTurnInput
 from agent.runner import Agent
-from routes.model_choice_sets import (
-    ALL_KEYS_MODELS_DEFAULT,
-    ALL_KEYS_MODELS_TEXT_CREATE,
-    ALL_KEYS_MODELS_UPDATE,
-    ANTHROPIC_ONLY_MODELS,
-    GEMINI_ANTHROPIC_MODELS,
-    GEMINI_OPENAI_MODELS,
-    GEMINI_ONLY_MODELS,
-    OPENAI_ANTHROPIC_MODELS,
-    OPENAI_ONLY_MODELS,
-    VIDEO_VARIANT_MODELS,
-)
-
 # from utils import pprint_prompt
 from ws.constants import APP_ERROR_WEB_SOCKET_CODE  # type: ignore
 
@@ -369,7 +356,7 @@ class ModelSelectionStage:
     ) -> List[Llm]:
         """Select appropriate models based on available API keys"""
         try:
-            num_variants = 2 if generation_type == "update" else NUM_VARIANTS
+            num_variants = NUM_VARIANTS_VIDEO if input_mode == "video" else NUM_VARIANTS
             variant_models = self._get_variant_models(
                 generation_type,
                 input_mode,
@@ -387,11 +374,11 @@ class ModelSelectionStage:
             return variant_models
         except Exception:
             await self.throw_error(
-                "No OpenAI, Anthropic, or Gemini API key found. Please add the environment variable "
-                "OPENAI_API_KEY, ANTHROPIC_API_KEY, or GEMINI_API_KEY to backend/.env or in the settings dialog. "
+                "OpenAI API key not found. Please add the environment variable "
+                "OPENAI_API_KEY to backend/.env or in the settings dialog. "
                 "If you add it to .env, make sure to restart the backend server."
             )
-            raise Exception("No API key")
+            raise Exception("No OpenAI API key")
 
     def _get_variant_models(
         self,
@@ -402,46 +389,11 @@ class ModelSelectionStage:
         anthropic_api_key: str | None,
         gemini_api_key: str | None,
     ) -> List[Llm]:
-        """Simple model cycling that scales with num_variants"""
+        """Use gpt-5.5 for every generated variant."""
+        if not openai_api_key:
+            raise Exception("OpenAI API key is missing.")
 
-        # Video mode requires Gemini - 2 variants for comparison
-        if input_mode == "video":
-            if not gemini_api_key:
-                raise Exception(
-                    "Video mode requires a Gemini API key. "
-                    "Please add GEMINI_API_KEY to backend/.env or in the settings dialog"
-                )
-            return list(VIDEO_VARIANT_MODELS)
-
-        # Define models based on available API keys
-        if gemini_api_key and anthropic_api_key and openai_api_key:
-            if input_mode == "text" and generation_type == "create":
-                models = list(ALL_KEYS_MODELS_TEXT_CREATE)
-            elif generation_type == "update":
-                models = list(ALL_KEYS_MODELS_UPDATE)
-            else:
-                models = list(ALL_KEYS_MODELS_DEFAULT)
-        elif gemini_api_key and anthropic_api_key:
-            models = list(GEMINI_ANTHROPIC_MODELS)
-        elif gemini_api_key and openai_api_key:
-            models = list(GEMINI_OPENAI_MODELS)
-        elif openai_api_key and anthropic_api_key:
-            models = list(OPENAI_ANTHROPIC_MODELS)
-        elif gemini_api_key:
-            models = list(GEMINI_ONLY_MODELS)
-        elif anthropic_api_key:
-            models = list(ANTHROPIC_ONLY_MODELS)
-        elif openai_api_key:
-            models = list(OPENAI_ONLY_MODELS)
-        else:
-            raise Exception("No OpenAI or Anthropic key")
-
-        # Cycle through models: [A, B] with num=5 becomes [A, B, A, B, A]
-        selected_models: List[Llm] = []
-        for i in range(num_variants):
-            selected_models.append(models[i % len(models)])
-
-        return selected_models
+        return [Llm.GPT_5_5_HIGH for _ in range(num_variants)]
 
 
 class PromptCreationStage:
@@ -678,14 +630,10 @@ class StatusBroadcastMiddleware(Middleware):
     async def process(
         self, context: PipelineContext, next_func: Callable[[], Awaitable[None]]
     ) -> None:
-        # Determine variant count based on input mode and generation type.
-        # Edit/update flows use two variants to keep latency and cost down.
+        # Determine variant count based on input mode.
         assert context.extracted_params is not None
         is_video_mode = context.extracted_params.input_mode == "video"
-        is_update = context.extracted_params.generation_type == "update"
-        num_variants = (
-            NUM_VARIANTS_VIDEO if is_video_mode else 2 if is_update else NUM_VARIANTS
-        )
+        num_variants = NUM_VARIANTS_VIDEO if is_video_mode else NUM_VARIANTS
 
         # Tell frontend how many variants we're using
         await context.send_message("variantCount", str(num_variants), 0)

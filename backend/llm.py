@@ -14,6 +14,10 @@ class Llm(Enum):
     GPT_5_3_CODEX_MEDIUM = "gpt-5.3-codex (medium thinking)"
     GPT_5_3_CODEX_HIGH = "gpt-5.3-codex (high thinking)"
     GPT_5_3_CODEX_XHIGH = "gpt-5.3-codex (xhigh thinking)"
+    GPT_5_5_LOW = "gpt-5.5 (low thinking)"
+    GPT_5_5_MEDIUM = "gpt-5.5 (medium thinking)"
+    GPT_5_5_HIGH = "gpt-5.5 (high thinking)"
+    GPT_5_5_XHIGH = "gpt-5.5 (xhigh thinking)"
     GPT_5_4_2026_03_05_NONE = "gpt-5.4-2026-03-05 (no thinking)"
     GPT_5_4_2026_03_05_LOW = "gpt-5.4-2026-03-05 (low thinking)"
     GPT_5_4_2026_03_05_MEDIUM = "gpt-5.4-2026-03-05 (medium thinking)"
@@ -51,6 +55,10 @@ MODEL_PROVIDER: dict[Llm, str] = {
     Llm.GPT_5_3_CODEX_MEDIUM: "openai",
     Llm.GPT_5_3_CODEX_HIGH: "openai",
     Llm.GPT_5_3_CODEX_XHIGH: "openai",
+    Llm.GPT_5_5_LOW: "openai",
+    Llm.GPT_5_5_MEDIUM: "openai",
+    Llm.GPT_5_5_HIGH: "openai",
+    Llm.GPT_5_5_XHIGH: "openai",
     Llm.GPT_5_4_2026_03_05_NONE: "openai",
     Llm.GPT_5_4_2026_03_05_LOW: "openai",
     Llm.GPT_5_4_2026_03_05_MEDIUM: "openai",
@@ -75,33 +83,37 @@ ANTHROPIC_MODELS = {m for m, p in MODEL_PROVIDER.items() if p == "anthropic"}
 GEMINI_MODELS = {m for m, p in MODEL_PROVIDER.items() if p == "gemini"}
 
 OPENAI_MODEL_CONFIG: dict[Llm, dict[str, str]] = {
-    Llm.GPT_4_1_2025_04_14: {"api_name": "gpt-4.1-2025-04-14"},
-    Llm.GPT_5_2_CODEX_LOW: {"api_name": "gpt-5.2-codex", "reasoning_effort": "low"},
-    Llm.GPT_5_2_CODEX_MEDIUM: {"api_name": "gpt-5.2-codex", "reasoning_effort": "medium"},
-    Llm.GPT_5_2_CODEX_HIGH: {"api_name": "gpt-5.2-codex", "reasoning_effort": "high"},
-    Llm.GPT_5_2_CODEX_XHIGH: {"api_name": "gpt-5.2-codex", "reasoning_effort": "xhigh"},
-    Llm.GPT_5_3_CODEX_LOW: {"api_name": "gpt-5.3-codex", "reasoning_effort": "low"},
-    Llm.GPT_5_3_CODEX_MEDIUM: {"api_name": "gpt-5.3-codex", "reasoning_effort": "medium"},
-    Llm.GPT_5_3_CODEX_HIGH: {"api_name": "gpt-5.3-codex", "reasoning_effort": "high"},
-    Llm.GPT_5_3_CODEX_XHIGH: {"api_name": "gpt-5.3-codex", "reasoning_effort": "xhigh"},
+    Llm.GPT_4_1_2025_04_14: {"api_name": "gpt-5.5"},
+    Llm.GPT_5_2_CODEX_LOW: {"api_name": "gpt-5.5", "reasoning_effort": "low"},
+    Llm.GPT_5_2_CODEX_MEDIUM: {"api_name": "gpt-5.5", "reasoning_effort": "medium"},
+    Llm.GPT_5_2_CODEX_HIGH: {"api_name": "gpt-5.5", "reasoning_effort": "high"},
+    Llm.GPT_5_2_CODEX_XHIGH: {"api_name": "gpt-5.5", "reasoning_effort": "xhigh"},
+    Llm.GPT_5_3_CODEX_LOW: {"api_name": "gpt-5.5", "reasoning_effort": "low"},
+    Llm.GPT_5_3_CODEX_MEDIUM: {"api_name": "gpt-5.5", "reasoning_effort": "medium"},
+    Llm.GPT_5_3_CODEX_HIGH: {"api_name": "gpt-5.5", "reasoning_effort": "high"},
+    Llm.GPT_5_3_CODEX_XHIGH: {"api_name": "gpt-5.5", "reasoning_effort": "xhigh"},
+    Llm.GPT_5_5_LOW: {"api_name": "gpt-5.5", "reasoning_effort": "low"},
+    Llm.GPT_5_5_MEDIUM: {"api_name": "gpt-5.5", "reasoning_effort": "medium"},
+    Llm.GPT_5_5_HIGH: {"api_name": "gpt-5.5", "reasoning_effort": "high"},
+    Llm.GPT_5_5_XHIGH: {"api_name": "gpt-5.5", "reasoning_effort": "xhigh"},
     Llm.GPT_5_4_2026_03_05_NONE: {
-        "api_name": "gpt-5.4-2026-03-05",
+        "api_name": "gpt-5.5",
         "reasoning_effort": "none",
     },
     Llm.GPT_5_4_2026_03_05_LOW: {
-        "api_name": "gpt-5.4-2026-03-05",
+        "api_name": "gpt-5.5",
         "reasoning_effort": "low",
     },
     Llm.GPT_5_4_2026_03_05_MEDIUM: {
-        "api_name": "gpt-5.4-2026-03-05",
+        "api_name": "gpt-5.5",
         "reasoning_effort": "medium",
     },
     Llm.GPT_5_4_2026_03_05_HIGH: {
-        "api_name": "gpt-5.4-2026-03-05",
+        "api_name": "gpt-5.5",
         "reasoning_effort": "high",
     },
     Llm.GPT_5_4_2026_03_05_XHIGH: {
-        "api_name": "gpt-5.4-2026-03-05",
+        "api_name": "gpt-5.5",
         "reasoning_effort": "xhigh",
     },
 }

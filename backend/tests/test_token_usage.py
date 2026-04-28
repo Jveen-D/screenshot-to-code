@@ -283,6 +283,7 @@ class TestModelPricing:
         for name in [
             "gpt-4.1-2025-04-14",
             "gpt-5.2-codex",
+            "gpt-5.5",
             "claude-opus-4-6",
             "claude-sonnet-4-6",
             "gemini-3-flash-preview",

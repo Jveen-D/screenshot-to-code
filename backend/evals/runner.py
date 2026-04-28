@@ -125,7 +125,7 @@ async def run_image_evals(
 
     print("User selected stack:", stack)
     print("User selected model:", model)
-    selected_model = Llm(model)
+    selected_model = Llm.GPT_5_5_HIGH
     print(f"Running evals for {selected_model.value} model")
     
     if input_files and len(input_files) > 0:
@@ -165,9 +165,7 @@ async def run_image_evals(
 
             if data_url is None:
                 data_url = await image_to_data_url(filepath)
-            current_model_for_task = (
-                selected_model if n_idx == 0 else Llm.GPT_4_1_2025_04_14
-            )
+            current_model_for_task = Llm.GPT_5_5_HIGH
             coro = generate_code_and_time(
                 image_url=data_url,
                 stack=stack,

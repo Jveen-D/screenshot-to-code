@@ -93,7 +93,7 @@ def test_openai_turn_input_logger_includes_request_payload(
             }
         ],
         request_payload={
-            "model": "gpt-5.2-codex",
+            "model": "gpt-5.5",
             "input": [{"role": "user", "content": "Build this page"}],
         },
     )

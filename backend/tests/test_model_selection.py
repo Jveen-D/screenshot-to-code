@@ -14,7 +14,7 @@ class TestModelSelectionAllKeys:
 
     @pytest.mark.asyncio
     async def test_gemini_anthropic_create(self):
-        """All keys: fixed order for four variants."""
+        """All keys create: uses gpt-5.5."""
         models = await self.model_selector.select_models(
             generation_type="create",
             input_mode="text",
@@ -24,16 +24,13 @@ class TestModelSelectionAllKeys:
         )
 
         expected = [
-            Llm.GEMINI_3_FLASH_PREVIEW_MINIMAL,
-            Llm.GPT_5_2_CODEX_HIGH,
-            Llm.CLAUDE_OPUS_4_6,
-            Llm.GEMINI_3_1_PRO_PREVIEW_LOW,
+            Llm.GPT_5_5_HIGH,
         ]
         assert models == expected
 
     @pytest.mark.asyncio
     async def test_gemini_anthropic_update_text(self):
-        """All keys text update: uses two fast edit variants."""
+        """All keys text update: uses gpt-5.5."""
         models = await self.model_selector.select_models(
             generation_type="update",
             input_mode="text",
@@ -43,14 +40,13 @@ class TestModelSelectionAllKeys:
         )
 
         expected = [
-            Llm.GEMINI_3_FLASH_PREVIEW_MINIMAL,
-            Llm.GPT_5_4_2026_03_05_LOW,
+            Llm.GPT_5_5_HIGH,
         ]
         assert models == expected
 
     @pytest.mark.asyncio
     async def test_gemini_anthropic_update(self):
-        """All keys image update: uses two fast edit variants."""
+        """All keys image update: uses gpt-5.5."""
         models = await self.model_selector.select_models(
             generation_type="update",
             input_mode="image",
@@ -60,14 +56,13 @@ class TestModelSelectionAllKeys:
         )
 
         expected = [
-            Llm.GEMINI_3_FLASH_PREVIEW_MINIMAL,
-            Llm.GPT_5_4_2026_03_05_LOW,
+            Llm.GPT_5_5_HIGH,
         ]
         assert models == expected
 
     @pytest.mark.asyncio
-    async def test_video_create_prefers_gemini_minimal_then_3_1_high(self):
-        """Video create always uses two Gemini variants in fixed order."""
+    async def test_video_create_uses_gpt_5_5(self):
+        """Video create uses gpt-5.5."""
         models = await self.model_selector.select_models(
             generation_type="create",
             input_mode="video",
@@ -77,14 +72,13 @@ class TestModelSelectionAllKeys:
         )
 
         expected = [
-            Llm.GEMINI_3_FLASH_PREVIEW_MINIMAL,
-            Llm.GEMINI_3_1_PRO_PREVIEW_HIGH,
+            Llm.GPT_5_5_HIGH,
         ]
         assert models == expected
 
     @pytest.mark.asyncio
-    async def test_video_update_prefers_gemini_minimal_then_3_1_high(self):
-        """Video update always uses the same two Gemini variants as video create."""
+    async def test_video_update_uses_gpt_5_5(self):
+        """Video update uses gpt-5.5."""
         models = await self.model_selector.select_models(
             generation_type="update",
             input_mode="video",
@@ -94,8 +88,7 @@ class TestModelSelectionAllKeys:
         )
 
         expected = [
-            Llm.GEMINI_3_FLASH_PREVIEW_MINIMAL,
-            Llm.GEMINI_3_1_PRO_PREVIEW_HIGH,
+            Llm.GPT_5_5_HIGH,
         ]
         assert models == expected
 
@@ -110,7 +103,7 @@ class TestModelSelectionOpenAIAnthropic:
 
     @pytest.mark.asyncio
     async def test_openai_anthropic(self):
-        """OpenAI + Anthropic: Claude Opus 4.6, GPT 5.2 Codex (high/medium), cycling"""
+        """OpenAI + Anthropic: uses gpt-5.5."""
         models = await self.model_selector.select_models(
             generation_type="create",
             input_mode="text",
@@ -120,10 +113,7 @@ class TestModelSelectionOpenAIAnthropic:
         )
 
         expected = [
-            Llm.CLAUDE_OPUS_4_6,
-            Llm.GPT_5_2_CODEX_HIGH,
-            Llm.GPT_5_2_CODEX_MEDIUM,
-            Llm.CLAUDE_OPUS_4_6,
+            Llm.GPT_5_5_HIGH,
         ]
         assert models == expected
 
@@ -138,22 +128,15 @@ class TestModelSelectionAnthropicOnly:
 
     @pytest.mark.asyncio
     async def test_anthropic_only(self):
-        """Anthropic only: Claude Opus 4.6 and Claude Sonnet 4.6 cycling"""
-        models = await self.model_selector.select_models(
-            generation_type="create",
-            input_mode="text",
-            openai_api_key=None,
-            anthropic_api_key="key",
-            gemini_api_key=None,
-        )
-
-        expected = [
-            Llm.CLAUDE_OPUS_4_6,
-            Llm.CLAUDE_SONNET_4_6,
-            Llm.CLAUDE_OPUS_4_6,
-            Llm.CLAUDE_SONNET_4_6,
-        ]
-        assert models == expected
+        """Anthropic only: raises because generation is pinned to gpt-5.5."""
+        with pytest.raises(Exception, match="No OpenAI API key"):
+            await self.model_selector.select_models(
+                generation_type="create",
+                input_mode="text",
+                openai_api_key=None,
+                anthropic_api_key="key",
+                gemini_api_key=None,
+            )
 
 
 class TestModelSelectionOpenAIOnly:
@@ -166,7 +149,7 @@ class TestModelSelectionOpenAIOnly:
 
     @pytest.mark.asyncio
     async def test_openai_only(self):
-        """OpenAI only: GPT 5.2 Codex (high/medium) only"""
+        """OpenAI only: uses gpt-5.5."""
         models = await self.model_selector.select_models(
             generation_type="create",
             input_mode="text",
@@ -176,10 +159,7 @@ class TestModelSelectionOpenAIOnly:
         )
 
         expected = [
-            Llm.GPT_5_2_CODEX_HIGH,
-            Llm.GPT_5_2_CODEX_MEDIUM,
-            Llm.GPT_5_2_CODEX_HIGH,
-            Llm.GPT_5_2_CODEX_MEDIUM,
+            Llm.GPT_5_5_HIGH,
         ]
         assert models == expected
 
@@ -195,7 +175,7 @@ class TestModelSelectionNoKeys:
     @pytest.mark.asyncio
     async def test_no_keys_raises_error(self):
         """No keys: Should raise an exception"""
-        with pytest.raises(Exception, match="No API key"):
+        with pytest.raises(Exception, match="No OpenAI API key"):
             await self.model_selector.select_models(
                 generation_type="create",
                 input_mode="text",
